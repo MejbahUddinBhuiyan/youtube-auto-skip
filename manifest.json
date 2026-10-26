@@ -1,11 +1,19 @@
 {
   "manifest_version": 3,
   "name": "YouTube Auto Skip",
-  "version": "0.1.0",
-  "description": "Personal Skip ad helper. Milestone 1: saved ON/OFF switch.",
+  "version": "0.2.0",
+  "description": "Automatically clicks an available YouTube Skip ad button.",
   "permissions": ["storage"],
   "action": {
     "default_title": "YouTube Auto Skip",
     "default_popup": "popup.html"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
 }

@@ -1,52 +1,127 @@
-# YouTube Auto Skip — Milestone 1
+# YouTube Auto Skip
 
-Personal, local Chrome extension using Manifest V3 and plain JavaScript.
-This milestone implements only the popup and saved ON/OFF setting.
-It does not inspect YouTube or click any controls yet.
+A free, personal Chrome extension using Manifest V3 and plain JavaScript.
 
-## Setup on Windows
+It attempts to click YouTube's genuine Skip ad control only when the
+control is visible and enabled. It does not assume a fixed countdown.
 
-1. Extract the ZIP to a permanent folder such as Desktop/youtube-auto-skip.
-2. Open that folder in VS Code using File > Open Folder.
-3. In Chrome, enter chrome://extensions in the address bar.
-4. Enable Developer mode, then click Load unpacked.
-5. Select the folder directly containing manifest.json.
-6. Open Chrome's Extensions menu and pin YouTube Auto Skip.
-7. Click the extension to open the popup.
+## Features
 
-## Verify this milestone
+- ON/OFF popup.
+- Preference saved with chrome.storage.local.
+- Enabled by default when no preference exists.
+- Setting changes applied to already-open YouTube tabs.
+- MutationObserver with grouped scans.
+- Specific Skip ad selectors.
+- Visibility, enabled-state, and duplicate-click checks.
+- Support for YouTube navigation without a full page reload.
 
-- First open: ON — Enabled. A missing setting defaults to enabled.
-- Switch OFF, close the popup, reopen: OFF — Disabled.
-- Switch ON, close the popup, reopen: ON — Enabled.
-- Switch OFF, fully exit Chrome, reopen: still OFF.
-- YouTube controls should behave normally; this version clicks nothing.
+## Files
 
-## Changes and errors
+- manifest.json: extension configuration and YouTube match restriction.
+- content.js: Skip ad detection and clicking.
+- popup.html: popup structure.
+- popup.css: popup appearance.
+- popup.js: saved ON/OFF preference.
 
-After editing files, save them, open chrome://extensions and click the
-extension's Reload button. Close and reopen the popup. Once a content script
-is added in milestone 2, also refresh every YouTube tab after extension reloads.
+## Install on Windows
 
-To inspect popup errors, open the popup, right-click inside it, choose Inspect,
-and read Console. Check the extension card's Errors button if it appears.
-For future content-script errors, open YouTube's DevTools with F12 and inspect
-Console; select the extension's execution context when needed.
+1. Keep all files together in the youtube-auto-skip folder.
+2. Open the folder in VS Code.
+3. Open chrome://extensions in Chrome.
+4. Enable Developer mode.
+5. Click Load unpacked.
+6. Select the folder containing manifest.json.
+7. Pin the extension from Chrome's Extensions menu.
+8. Refresh all already-open YouTube tabs.
 
-## Permissions and privacy
+No npm packages, build tools, accounts, or API keys are required.
 
-Only storage is requested to save the enabled preference locally.
-This milestone has no access to websites, background worker, external scripts,
-network requests, data collection, icons, dependencies, or build step.
-Milestone 2 will restrict content-script matching to https://www.youtube.com/*.
+## After changing code
 
-## Pending
+1. Save the files in VS Code.
+2. Open chrome://extensions.
+3. Click Reload on the extension.
+4. Refresh every open YouTube tab.
+5. Reopen the popup.
 
-- YouTube-only content script with immediate storage change handling.
-- MutationObserver and specific genuine Skip ad selectors.
-- Connected, visible, enabled checks and duplicate-click protection.
-- Manual skippable/unskippable ad checks, toggling during playback,
-  navigation, multiple tabs, and ordinary control checks.
+Refreshing tabs replaces old content scripts after an extension reload.
+Changing ON/OFF normally does not require refreshing tabs.
 
-No live YouTube selector or Chrome UI testing was performed for this milestone.
-Future YouTube interface compatibility and Chrome Web Store approval are not guaranteed.
+## Manual validation
+
+- Skippable ad: wait until Skip becomes available; it should be clicked.
+- Unskippable ad: it should continue normally.
+- OFF: an available Skip control should remain for manual use.
+- ON during playback: an available Skip control should be clicked.
+- Restart Chrome: the saved preference should remain.
+- Navigate between videos without refreshing: detection should continue.
+- Multiple YouTube tabs: the saved switch should affect all loaded tabs.
+- Ordinary video controls: play, pause, settings, and fullscreen should
+  work normally and receive no automatic clicks.
+
+Ads may not appear every time. No ad appearing is not proof of success.
+
+## Selector assumptions
+
+The code checks these classes inside #movie_player:
+
+- .ytp-ad-skip-button
+- .ytp-ad-skip-button-modern
+- .ytp-skip-ad-button
+
+It also requires the player to have the ad-showing class.
+
+These assumptions are not verified against the current live YouTube UI.
+A matching element must be a button or contain a button, including an
+element with role="button".
+
+If YouTube changes its interface, detection may stop working.
+Inspect the genuine available Skip control in DevTools and update
+SKIP_SELECTORS only after confirming its structure. The player ID and
+ad-showing guard may also require review.
+
+Do not replace these selectors with broad text matching or selectors
+that target arbitrary buttons.
+
+A reused button becomes eligible again after a scan observes it as
+unavailable, or after the player leaves its ad-showing state. If YouTube
+reuses it without an observable availability transition, another ad may
+require manual skipping.
+
+## Troubleshooting
+
+For popup errors:
+Open the popup, right-click inside it, select Inspect, and read Console.
+
+For content-script errors:
+Open YouTube, press F12, and read Console. Use the Console context menu
+to select the extension's content-script context when needed.
+
+A successful click attempt logs:
+[YouTube Auto Skip] Clicked an available Skip ad control.
+
+This log confirms a click was attempted; verify visually that the ad
+actually skipped.
+
+Also check the Errors button on the extension card if one appears.
+
+After reloading the extension, refresh YouTube before diagnosing
+extension-context errors.
+
+## Privacy and scope
+
+The only named API permission is storage.
+Content-script access is restricted to https://www.youtube.com/*.
+
+The extension stores only the enabled preference. It does not collect or
+transmit browsing history, video details, or personal data.
+
+It does not extract media, intercept streams, block requests, change
+timers, hide ads, or provide background audio playback.
+
+## Validation status
+
+Live Chrome and YouTube testing must be completed manually.
+Future YouTube compatibility and Chrome Web Store approval are not
+guaranteed.
